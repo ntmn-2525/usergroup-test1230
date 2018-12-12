@@ -129,14 +129,12 @@ class LinebotService():
 
 
         # load parameters
-        nn.load_parameters('C:\\Users\\kawakamin\\Downloads\\train_data\\result_train_1.nnp')
+        nn.load_parameters('./result_train.nnp')
 
         # Prepare input variable
         x=nn.Variable((1,3))
 
         # Let input data to x.d
-        #test_data = data_iterator_csv_dataset("C:\\Users\\kawakamin\\Downloads\\train_data\\TEST.csv",1,shuffle=False,with_memory_cache=False,with_file_cache=False)
-        
         #test_data = ["0.5","0.1","1.1050143"]
         #x.d = test_data
         data = [sentiment_score, category_code, "1.1050143"]
