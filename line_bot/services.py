@@ -6,10 +6,16 @@ Created on Mon Dec  3 09:38:41 2018
 """
 
 from data_storage.models import Advice
-from google.cloud import language
+from google.cloud import language #emotionAPI
 
 import random
 
+import nnabla as nn #nnabla
+import nnabla.functions as F #nnabla
+import nnabla.parametric_functions as PF #nnabla
+from nnabla.utils.data_iterator import data_iterator_csv_dataset #nnabla
+        
+        
 IS_DUMMY_ANALYZE_SENTIMENT = False
 IS_DUMMY_ASSUME_BY_NNABLA = True
 
@@ -66,6 +72,8 @@ class LinebotService():
         #
         #_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
+        
+        
     def __assume_by_nnabla(self, sentiment_score, category_code):
         if IS_DUMMY_ASSUME_BY_NNABLA:
             options = []
@@ -85,6 +93,63 @@ class LinebotService():
         #_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
 
+        def network(x, test=False):
+            # Input:x -> 3
+
+            # Affine -> 100
+            h = PF.affine(x, (100,), name='Affine')
+            # BatchNormalization
+            h = PF.batch_normalization(h, (1,), 0.9, 0.0001, not test, name='BatchNormalization')
+            # LeakyReLU
+            h = F.leaky_relu(h)
+
+            # Affine_2
+            h = PF.affine(h, (100,), name='Affine_2')
+            # BatchNormalization_2
+            h = PF.batch_normalization(h, (1,), 0.9, 0.0001, not test, name='BatchNormalization_2')
+            # LeakyReLU_2
+            h = F.leaky_relu(h)
+
+            # Affine_3
+            h = PF.affine(h, (100,), name='Affine_3')
+            # BatchNormalization_3
+            h = PF.batch_normalization(h, (1,), 0.9, 0.0001, not test, name='BatchNormalization_3')
+            # LeakyReLU_3
+            h = F.leaky_relu(h)
+
+            # Affine_4 -> 131
+            h = PF.affine(h, (131,), name='Affine_4')
+            # BatchNormalization_4
+            h = PF.batch_normalization(h, (1,), 0.9, 0.0001, not test, name='BatchNormalization_4')
+
+            # Softmax
+            h = F.softmax(h)
+            return h
+
+
+
+        # load parameters
+        nn.load_parameters('C:\\Users\\kawakamin\\Downloads\\train_data\\result_train_1.nnp')
+
+        # Prepare input variable
+        x=nn.Variable((1,3))
+
+        # Let input data to x.d
+        #test_data = data_iterator_csv_dataset("C:\\Users\\kawakamin\\Downloads\\train_data\\TEST.csv",1,shuffle=False,with_memory_cache=False,with_file_cache=False)
+        
+        #test_data = ["0.5","0.1","1.1050143"]
+        #x.d = test_data
+        data = [sentiment_score, category_code, "1.1050143"]
+        x.d = data
+        #x.data.zero()
+
+        # Build network for inference
+        y = network(x, test=True)
+
+        # Execute inference
+        y.forward()
+        #"%.10f" % 
+        print(y.d)
 
         #_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
         #
