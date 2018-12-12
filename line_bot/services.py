@@ -61,9 +61,10 @@ class LinebotService():
         sentences = response.sentences
 
         # 全体の感情スコアを出力
-        print('Text全体')
-        print('Text: {}'.format(text))
-        print('Sentiment: {}'.format(sentiment.score))
+        return sentiment.score
+        #print('Text全体')
+        #print('Text: {}'.format(text))
+        #print('Sentiment: {}'.format(sentiment.score))
         #print('Sentiment: {}, {}'.format(sentiment.score, sentiment.magnitude))
 
         #_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
