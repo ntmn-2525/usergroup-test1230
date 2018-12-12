@@ -6,10 +6,11 @@ Created on Mon Dec  3 09:38:41 2018
 """
 
 from data_storage.models import Advice
+from google.cloud import language
 
 import random
 
-IS_DUMMY_ANALYZE_SENTIMENT = True
+IS_DUMMY_ANALYZE_SENTIMENT = False
 IS_DUMMY_ASSUME_BY_NNABLA = True
 
 class LinebotService():
@@ -38,7 +39,26 @@ class LinebotService():
         #
         #_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
+        # クライアントのインスタンス化
+        language_client = language.Client()
 
+        # 分析したいテキスト
+        text = message
+
+        # リクエストのデータを格納
+        document = language_client.document_from_text(text)
+        # 感情分析のレスポンスを格納
+        response = document.analyze_sentiment()
+        # ドキュメント全体の感情が含まれたオブジェクト
+        sentiment = response.sentiment
+        # 各段落の感情が含まれたオブジェクトのリスト
+        sentences = response.sentences
+
+        # 全体の感情スコアを出力
+        print('Text全体')
+        print('Text: {}'.format(text))
+        print('Sentiment: {}'.format(sentiment.score))
+        #print('Sentiment: {}, {}'.format(sentiment.score, sentiment.magnitude))
 
         #_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
         #
