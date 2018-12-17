@@ -1,7 +1,5 @@
 # Standard modules.
 import os
-import sys
-import logging
 import urllib
 
 # Django modules.
@@ -36,7 +34,7 @@ from linebot.exceptions import (
 
 # Local modules.
 from .logging import (
-    LogLevel,
+    to_log_level,
     SimpleConsoleLogger,
 )
 
@@ -63,8 +61,7 @@ except ImportError:
     LINE_ACCESS_TOKEN = ''
 
 # Logging.
-#logger = logging.getLogger('poa_web')
-logger = SimpleConsoleLogger(LogLevel.INFO)
+logger = SimpleConsoleLogger(to_log_level(os.getenv('DJANGO_LOG_LEVEL', 'DEBUG')))
 
 # LINE Bot handler.
 line_bot_api = LineBotApi(channel_access_token = os.getenv('LINE_ACCESS_TOKEN', LINE_ACCESS_TOKEN))
@@ -74,11 +71,7 @@ def callback(request):
     signature = request.META['HTTP_X_LINE_SIGNATURE']
     request_body = request.body.decode('utf-8')
 
-    logger.error('request body => ' + request_body)
-    logger.debug('debug!!')
-    logger.info('info!!')
-    logger.error('error!!')
-    logger.fatal('fatal!!')
+    logger.debug('request body => ' + request_body)
 
     try:
         webhook_handler.handle(request_body, signature)

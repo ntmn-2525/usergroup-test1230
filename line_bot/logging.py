@@ -12,24 +12,36 @@ from enum import (
     IntEnum,
 )
 
+def to_log_level(level_name):
+    if level_name == 'DEBUG':
+        return LogLevel.DEBUG
+    elif level_name == 'INFO':
+        return LogLevel.INFO
+    elif level_name == 'ERROR':
+        return LogLevel.ERROR
+    elif level_name == 'FATAL':
+        return LogLevel.FATAL
+    else:
+        return LogLevel.UNDEF
+
+def to_log_name(level):
+    if LogLevel.DEBUG == level:
+        return "DEBUG"
+    elif LogLevel.INFO == level:
+        return "INFO"
+    elif LogLevel.ERROR == level:
+        return "ERROR"
+    elif LogLevel.FATAL == level:
+        return "FATAL"
+    else:
+        return "UNDEF"
+
 class LogLevel(IntEnum):
     DEBUG = 1
     INFO  = auto()
     ERROR = auto()
     FATAL = auto()
     UNDEF = auto()
-
-    def to_value(self, level_name):
-        if level_name == 'DEBUG':
-            return self.DEBUG
-        elif level_name == 'INFO':
-            return self.INFO
-        elif level_name == 'ERROR':
-            return self.ERROR
-        elif level_name == 'FATAL':
-            return self.FATAL
-        else:
-            return self.UNDEF
 
 class SimpleConsoleLogger():
     def __init__(self, level = LogLevel.UNDEF):
