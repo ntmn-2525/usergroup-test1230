@@ -1,5 +1,6 @@
 # Standard modules.
 import os
+import sys
 import logging
 import urllib
 
@@ -68,6 +69,7 @@ def callback(request):
     request_body = request.body.decode('utf-8')
 
     logger.error('request body => ' + request_body)
+    sys.stderr.writelines('stderr!!')
 
     try:
         webhook_handler.handle(request_body, signature)
