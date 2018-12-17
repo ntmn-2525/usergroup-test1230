@@ -35,6 +35,11 @@ from linebot.exceptions import (
 )
 
 # Local modules.
+from .logging import (
+    LogLevel,
+    SimpleConsoleLogger,
+)
+
 from .services import (
     LinebotService,
 )
@@ -58,7 +63,8 @@ except ImportError:
     LINE_ACCESS_TOKEN = ''
 
 # Logging.
-logger = logging.getLogger('poa_web')
+#logger = logging.getLogger('poa_web')
+logger = SimpleConsoleLogger(LogLevel.INFO)
 
 # LINE Bot handler.
 line_bot_api = LineBotApi(channel_access_token = os.getenv('LINE_ACCESS_TOKEN', LINE_ACCESS_TOKEN))
@@ -69,7 +75,10 @@ def callback(request):
     request_body = request.body.decode('utf-8')
 
     logger.error('request body => ' + request_body)
-    sys.stderr.writelines('stderr!!')
+    logger.debug('debug!!')
+    logger.info('info!!')
+    logger.error('error!!')
+    logger.fatal('fatal!!')
 
     try:
         webhook_handler.handle(request_body, signature)
