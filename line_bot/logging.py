@@ -55,4 +55,4 @@ class SimpleConsoleLogger():
             self.__output(message, 'FATAL')
 
     def __output(self, message, level_name):
-        sys.stderr.write('[{0}] {1}\n'.format(level_name, message))
+        sys.stderr.write('[{0: <5}] {1}\n'.format(level_name, message))
