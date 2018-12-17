@@ -11,10 +11,6 @@ class Category(models.Model):
     code = models.IntegerField(
         unique = True,
         null = False,
-        validators = [
-            validators.MinValueValidator(1),
-            validators.MaxValueValidator(5),
-        ],
     )
 
     name = models.CharField(

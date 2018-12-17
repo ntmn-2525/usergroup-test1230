@@ -52,26 +52,29 @@ from data_storage.models import (
 )
 
 try:
+    DJANGO_LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL')
+    LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
+    LINE_ACCESS_TOKEN = os.getenv('LINE_ACCESS_TOKEN')
+except ImportError:
     from poa_web.settings_local import (
+        DJANGO_LOG_LEVEL,
         LINE_CHANNEL_SECRET,
         LINE_ACCESS_TOKEN,
     )
-except ImportError:
-    LINE_CHANNEL_SECRET = ''
-    LINE_ACCESS_TOKEN = ''
 
 # Logging.
-logger = SimpleConsoleLogger(to_log_level(os.getenv('DJANGO_LOG_LEVEL', 'DEBUG')))
+logger = SimpleConsoleLogger(to_log_level(DJANGO_LOG_LEVEL))
 
 # LINE Bot handler.
-line_bot_api = LineBotApi(channel_access_token = os.getenv('LINE_ACCESS_TOKEN', LINE_ACCESS_TOKEN))
-webhook_handler = WebhookHandler(channel_secret = os.getenv('LINE_CHANNEL_SECRET', LINE_CHANNEL_SECRET))
+line_bot_api = LineBotApi(channel_access_token = LINE_ACCESS_TOKEN)
+webhook_handler = WebhookHandler(channel_secret = LINE_CHANNEL_SECRET)
 
 def callback(request):
     signature = request.META['HTTP_X_LINE_SIGNATURE']
     request_body = request.body.decode('utf-8')
 
-    logger.debug('request body => ' + request_body)
+    logger.debug('Raw request body is:')
+    logger.debug(request_body)
 
     try:
         webhook_handler.handle(request_body, signature)
@@ -84,10 +87,18 @@ def callback(request):
 
 @webhook_handler.add(FollowEvent)
 def handle_follow(event):
+    logger.info('FolloEvent has occurred. (user_id => ' + event.source.user_id + ')')
+
     try:
         friend = LineFriend(user_id = event.source.user_id)
         friend.save()
+
+        logger.debug('Registerred ' + event.source.user_id + ' as line friend.')
+
     except Exception as e:
+        logger.error('EXECUTE FAILURE!!')
+        logger.error('Failed to register ' + event.source.user_id + '.')
+        logger.error('Caused by:')
         logger.error(e.args)
 
     carouselColumns = []
@@ -120,22 +131,33 @@ def handle_follow(event):
 
 @webhook_handler.add(UnfollowEvent)
 def handle_unfollow(event):
+    logger.info('UnfolloEvent has occurred. (user_id => ' + event.source.user_id + ')')
+
     try:
         friend = LineFriend.objects.filter(user_id = event.source.user_id)
         friend.delete()
+
+        logger.debug('Deleted ' + event.source.user_id + '.')
+
     except Exception as e:
+        logger.error('EXECUTE FAILURE!!')
+        logger.error('Failed to delete ' + event.source.user_id + '.')
+        logger.error('Caused by:')
         logger.error(e.args)
 
 @webhook_handler.add(PostbackEvent)
 def handle_postback(event):
+    logger.info('PostbackEvent has occurred.')
+
     query_string = urllib.parse.parse_qs(event.postback.data)
 
     if 'mode' in query_string:
         mode = query_string['mode'][0]
 
+        logger.debug('mode as ' + mode + ".")
+
         if mode == 'after_follow':
             handle_postback_after_follow(event, query_string)
-
 
 def handle_postback_after_follow(event, query_string):
     try:

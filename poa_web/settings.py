@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'line_bot',
     'data_storage',
 ]
@@ -116,40 +117,22 @@ GS_BUCKET_NAME = 'poa-gcp-bucket'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATIC_URL = '/static/'
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-#Logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters' : {
-        'all' : {
-            'format' : ' '.join([
-                "[%(levelname)s]",
-                "time:%(asctime)s",
-                "module:%(module)s",
-                "message:%(message)s",
-            ])
-        },
-    },
-    'handlers': {
-        'console':{
-            'level':'INFO',
-            'class':'logging.StreamHandler',
-            'formatter' : 'all',
-        },
-    },
-    'loggers': {
-        'poa_web': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate' : True,
-        },
-    }
+AWS_LOCATION = 'static'
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'poa-bucket'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',  # 1日はそのキャッシュを使う
 }
+
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
 
 django_heroku.settings(locals())
 

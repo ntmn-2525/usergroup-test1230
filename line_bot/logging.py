@@ -13,10 +13,14 @@ from enum import (
 )
 
 def to_log_level(level_name):
-    if level_name == 'DEBUG':
+    if level_name == 'TRACE':
+        return LogLevel.TRACE
+    elif level_name == 'DEBUG':
         return LogLevel.DEBUG
     elif level_name == 'INFO':
         return LogLevel.INFO
+    elif level_name == 'WARN':
+        return LogLevel.WARN
     elif level_name == 'ERROR':
         return LogLevel.ERROR
     elif level_name == 'FATAL':
@@ -25,10 +29,14 @@ def to_log_level(level_name):
         return LogLevel.UNDEF
 
 def to_log_name(level):
-    if LogLevel.DEBUG == level:
+    if LogLevel.TRACE == level:
+        return "TRACE"
+    elif LogLevel.DEBUG == level:
         return "DEBUG"
     elif LogLevel.INFO == level:
         return "INFO"
+    elif LogLevel.WARN == level:
+        return "WARN"
     elif LogLevel.ERROR == level:
         return "ERROR"
     elif LogLevel.FATAL == level:
@@ -37,8 +45,10 @@ def to_log_name(level):
         return "UNDEF"
 
 class LogLevel(IntEnum):
-    DEBUG = 1
+    TRACE = 1
+    DEBUG = auto()
     INFO  = auto()
+    WARN  = auto()
     ERROR = auto()
     FATAL = auto()
     UNDEF = auto()
@@ -50,6 +60,10 @@ class SimpleConsoleLogger():
     def setLevel(self, level):
         self.__level = level
 
+    def trace(self, message):
+        if self.__level <= LogLevel.TRACE:
+            self.__output(message, 'TRACE')
+
     def debug(self, message):
         if self.__level <= LogLevel.DEBUG:
             self.__output(message, 'DEBUG')
@@ -57,6 +71,10 @@ class SimpleConsoleLogger():
     def info(self, message):
         if self.__level <= LogLevel.INFO:
             self.__output(message, 'INFO')
+
+    def warn(self, message):
+        if self.__level <= LogLevel.WARN:
+            self.__output(message, 'WARN')
 
     def error(self, message):
         if self.__level <= LogLevel.ERROR:
