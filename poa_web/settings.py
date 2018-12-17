@@ -146,7 +146,7 @@ LOGGING = {
         'poa_web': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate' : False,
+            'propagate' : True,
         },
     }
 }

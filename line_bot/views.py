@@ -68,10 +68,6 @@ def callback(request):
     request_body = request.body.decode('utf-8')
 
     logger.error('request body => ' + request_body)
-    logger.debug('debug')
-    logger.info('info')
-    logger.error('error')
-    logger.fatal('fatal')
 
     try:
         webhook_handler.handle(request_body, signature)
