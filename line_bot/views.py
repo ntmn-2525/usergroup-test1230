@@ -1,11 +1,19 @@
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.views.generic import TemplateView
+# Standard modules.
+import os
+import logging
+import urllib
 
+# Django modules.
+from django.http import (
+    HttpResponse,
+)
+
+# LINE Bot modules.
 from linebot import (
     LineBotApi,
     WebhookHandler,
 )
+
 from linebot.models import (
     ButtonsTemplate,
     CarouselColumn,
@@ -20,29 +28,38 @@ from linebot.models import (
     TextSendMessage,
     UnfollowEvent,
 )
-from linebot.exceptions import InvalidSignatureError
 
-from .forms import TestForm
-from .services import LinebotService
+from linebot.exceptions import (
+    InvalidSignatureError,
+)
+
+# Local modules.
+from .services import (
+    LinebotService,
+)
+
+from .settings_line_bot import (
+    LINE_BOT_NAME,
+)
+
 from data_storage.models import (
     Category,
     LineFriend,
 )
 
-import os
-import logging
-import urllib
-
 try:
-    from poa_web.settings_local import LINE_CHANNEL_SECRET
-    from poa_web.settings_local import LINE_ACCESS_TOKEN
+    from poa_web.settings_local import (
+        LINE_CHANNEL_SECRET,
+        LINE_ACCESS_TOKEN,
+    )
 except ImportError:
     LINE_CHANNEL_SECRET = ''
     LINE_ACCESS_TOKEN = ''
-    
-BOT_NAME = 'Chabo'
 
+# Logging.
 logger = logging.getLogger('poa_web')
+
+# LINE Bot handler.
 line_bot_api = LineBotApi(channel_access_token = os.getenv('LINE_ACCESS_TOKEN', LINE_ACCESS_TOKEN))
 webhook_handler = WebhookHandler(channel_secret = os.getenv('LINE_CHANNEL_SECRET', LINE_CHANNEL_SECRET))
 
@@ -50,7 +67,11 @@ def callback(request):
     signature = request.META['HTTP_X_LINE_SIGNATURE']
     request_body = request.body.decode('utf-8')
 
-    logger.fatal('request body => ' + request_body)
+    logger.error('request body => ' + request_body)
+    logger.debug('debug')
+    logger.info('info')
+    logger.error('error')
+    logger.fatal('fatal')
 
     try:
         webhook_handler.handle(request_body, signature)
@@ -86,7 +107,7 @@ def handle_follow(event):
     line_bot_api.reply_message(
         event.reply_token,
         [
-            TextSendMessage(text = 'はじめまして、' + BOT_NAME + 'です。'),
+            TextSendMessage(text = 'はじめまして、' + LINE_BOT_NAME + 'です。'),
             TextSendMessage(text = 'カテゴリを選択してください。'),
             TemplateSendMessage(
                 alt_text = 'カテゴリを選択してください。',
@@ -132,7 +153,7 @@ def handle_postback_after_follow(event, query_string):
         event.reply_token,
         [
             TextSendMessage(text = 'カテゴリを登録しました。'),
-            TextSendMessage(text = '「' + BOT_NAME + '」と呼んでみてください。'),
+            TextSendMessage(text = '「' + LINE_BOT_NAME + '」と呼んでみてください。'),
         ]
     )
 
@@ -140,7 +161,7 @@ def handle_postback_after_follow(event, query_string):
 def handle_text_message(event):
     friend = LineFriend.objects.get(user_id = event.source.user_id)
 
-    if event.message.text == BOT_NAME:
+    if event.message.text == LINE_BOT_NAME:
         handle_text_message_call_me(event)
     else:
         if bool(friend.asking):
@@ -169,10 +190,6 @@ def handle_text_message_advice(event):
     except Exception as e:
         logger.error(e.args)
 
-    logger.error(friend)
-    logger.error(friend.favorite_category_code)
-    logger.error(friend.favorite_category_code.code)
-
     linebot_service = LinebotService()
     advices = linebot_service.advice(event.message.text, friend.favorite_category_code.code)
 
@@ -191,21 +208,9 @@ def handle_text_message_advice(event):
         TemplateSendMessage(
             alt_text = 'Buttons template',
             template = ButtonsTemplate(
-                thumbnail_image = '',
                 title = 'Menu',
                 text = 'Please select.',
                 actions = actions,
             )
         )
     )
-
-class TestView(TemplateView):
-    def __init__(self):
-        self.params = {}
-
-    def get(self, request):
-        return self.post(request)
-
-    def post(self, request):
-        self.params['testForm'] = TestForm()
-        return render(request, 'line_bot/test.html', self.params)
