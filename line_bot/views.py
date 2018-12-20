@@ -105,6 +105,7 @@ def handle_follow(event):
     for category in Category.objects.all():
         carouselColumns.append(
             CarouselColumn(
+                thumbnail_image_url = 'https://poa-web.herokuapp.com/static/santa.png',
                 text = category.name,
                 actions = [
                     PostbackAction(
