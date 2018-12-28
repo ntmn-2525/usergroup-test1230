@@ -11,6 +11,15 @@ from line_bot.models import (
     LineFriend,
 )
 
+# Local modules.
+from .logging import (
+    to_log_level,
+    SimpleConsoleLogger,
+)
+
+# Logging.
+logger = SimpleConsoleLogger(to_log_level('DEBUG'))
+
 from linebot.models import (
 #    ButtonsTemplate,
 #    CarouselColumn,
@@ -64,11 +73,15 @@ class FollowService(LinebotService):
         user_id = self._event.source.user_id
         line_friends = LineFriend.objects.filter(user_id = user_id)
 
+        logger.debug('FollowService1')
+
         if line_friends.exists():
             line_friend = line_friends[0]
         else:
             line_friend = LineFriend(user_id = user_id)
             line_friend.save()
+
+        logger.debug('FollowService2')
 
         msgs = []
         msgs.append(TextSendMessage(text = 'お友だち登録ありがとう！'))
@@ -76,6 +89,8 @@ class FollowService(LinebotService):
         msgs.append(TextSendMessage(text = 'そうだ！'))
         msgs.append(TextSendMessage(text = 'ぼくにニックネームをつけてみて！'))
         self._container['messages'] = msgs
+
+        logger.debug('FollowService3')
 
         self._container['mode']['curr'] = ServiceMode.NICKNAME
 

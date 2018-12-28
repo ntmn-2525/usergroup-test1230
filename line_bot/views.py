@@ -37,20 +37,12 @@ from .logging import (
     SimpleConsoleLogger,
 )
 
-from .models import (
-    Category,
-    LineFriend,
-)
-
 from .services import (
     FollowService,
-    LinebotService,
-    UnfollowService,
+    MessageService,
+    PostbackService,
     ServiceMode,
-)
-
-from .settings_line_bot import (
-    LINE_BOT_NAME,
+    UnfollowService,
 )
 
 try:
@@ -87,6 +79,8 @@ def callback(request):
     except InvalidSignatureError as e:
         raise e
 
+    logger.debug('Parsing events successfully.')
+
     for event in events:
         if 'status_container' in request.session:
             status_container = request.session['status_container']
@@ -103,11 +97,13 @@ def callback(request):
                 },
             }
 
+        logger.debug('Parsing events successfully.')
+
         event_type = event.type
         if event_type == 'message':
-            pass
+            service = MessageService(event, status_container)
         elif event_type == 'postback':
-            pass
+            service = PostbackService(event, status_container)
         elif event_type == 'follow':
             service = FollowService(event, status_container)
         elif event_type == 'unfollow':
