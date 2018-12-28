@@ -94,6 +94,8 @@ class FollowService(LinebotService):
 
         self._container['mode']['curr'] = ServiceMode.NICKNAME
 
+        logger.debug('FollowService4')
+
 class UnfollowService(LinebotService):
 
     def execute(self):
