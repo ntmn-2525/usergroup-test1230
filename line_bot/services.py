@@ -50,30 +50,39 @@ class ServiceMode(Enum):
 class LinebotService(object):
 
     def __init__(self, event, container):
-        self.__event = event
-        self.__container = container
-        self.__container['mode']['prev'] = self.__container['mode']['curr']
-        self.__container['mode']['curr'] = ServiceMode.UNDEFINED
+        self.event = event
+        self.container = container
+        self.container['mode']['prev'] = self.container['mode']['curr']
+        self.container['mode']['curr'] = ServiceMode.UNDEFINED
+
+    def execute(self):
+        self.init()
+        self.process()
+        self.destroy()
+        return self.container
+
+    def init(self):
+        pass
+
+    def destroy(self):
+        pass
 
     @abstractmethod
-    def execute(self):
+    def process(self):
         raise NotImplementedError()
 
-    @property
-    def _event(self):
-        return self.__event
+    @abstractmethod
+    def generate_messages(self):
+        raise NotImplementedError()
 
-    @property
-    def _container(self):
-        return self.__container
+class LinebotSubService(LinebotService):
+    pass
 
 class FollowService(LinebotService):
 
-    def execute(self):
-        user_id = self._event.source.user_id
+    def process(self):
+        user_id = self.event.source.user_id
         line_friends = LineFriend.objects.filter(user_id = user_id)
-
-        logger.debug('FollowService1')
 
         if line_friends.exists():
             line_friend = line_friends[0]
@@ -81,40 +90,40 @@ class FollowService(LinebotService):
             line_friend = LineFriend(user_id = user_id)
             line_friend.save()
 
-        logger.debug('FollowService2')
-
         msgs = []
         msgs.append(TextSendMessage(text = 'お友だち登録ありがとう！'))
         msgs.append(TextSendMessage(text = 'これからあなたの生活をサポートするよ。いつでも声をかけてね。'))
         msgs.append(TextSendMessage(text = 'そうだ！'))
         msgs.append(TextSendMessage(text = 'ぼくにニックネームをつけてみて！'))
-        self._container['messages'] = msgs
+        self.container['msgs'] = msgs
 
-        logger.debug('FollowService3')
-
-        self._container['mode']['curr'] = ServiceMode.NICKNAME
-
-        logger.debug('FollowService4')
+        self.container['mode']['curr'] = ServiceMode.NICKNAME
 
 class UnfollowService(LinebotService):
 
-    def execute(self):
-        user_id = self._event.source.user_id
+    def process(self):
+        user_id = self.event.source.user_id
         line_friend = LineFriend.objects.get(user_id = user_id)
         line_friend.delete()
 
+        self.container['msgs'] = []
+
+        self.container['mode']['curr'] = ServiceMode.UNDEFINED
+
 class MessageService(LinebotService):
 
-    def execute(self):
-        curr_mode = self._container['mode']['curr']
+    def process(self):
+        curr_mode = self.container['mode']['curr']
 
         if curr_mode == ServiceMode.NICKNAME:
-            self.__handle_nickname()
-        elif curr_mode == ServiceMode.NICKNAME_CONFIRM:
-            self.__handle_nickname_confirm()
+            sub_service = NicknameSubService(self.event, self.container)
 
-    def __handle_nickname(self):
-        bot_name = self._event.message.text
+        self.container = sub_service.execute()
+
+class NicknameSubService(LinebotSubService):
+
+    def process(self):
+        bot_name = self.event.message.text
 
         msgs = []
         msgs.append(
@@ -129,24 +138,29 @@ class MessageService(LinebotService):
                 )
             )
         )
-        self._container['messages'] = msgs
+        self.container['msgs'] = msgs
 
-        self._container['mode']['curr'] = ServiceMode.NICKNAME_CONFIRM
+        self.container['mode']['curr'] = ServiceMode.NICKNAME_CONFIRM
 
 class PostbackService(LinebotService):
 
-    def execute(self):
-        curr_mode = self._container['mode']['curr']
+    def process(self):
+        curr_mode = self.container['mode']['curr']
 
         if curr_mode == ServiceMode.NICKNAME_CONFIRM:
-            self.__handle_nickname_confirm()
+            sub_service = NicknameConfirmSubService(self.event, self.container)
 
-    def __handle_nickname_confirm(self):
-        message = self._event.postback.data
+        self.container = sub_service.execute()
+
+class NicknameConfirmSubService(LinebotSubService):
+
+    def process(self):
+        message = self.event.postback.data
 
         if message == 'yes':
-            user_id = self._event.source.user_id
-            bot_name = self._container['temp']['bot_name']
+            user_id = self.event.source.user_id
+            bot_name = self.container['temp']['bot_name']
+            del self.container['temp']['bot_name']
     
             line_friend = LineFriend.objects.get(user_id = user_id)
             line_friend.bot_name = bot_name
@@ -154,16 +168,17 @@ class PostbackService(LinebotService):
 
             msgs = []
             msgs.append(TextSendMessage(text = 'これから「' + bot_name + '」と呼んでね！'))
-            self._container['messages'] = msgs
-    
+            self.container['msgs'] = msgs
+
             self._container['mode']['curr'] = ServiceMode.CHATTING
 
         else:
             msgs = []
             msgs.append(TextSendMessage(text = 'もう一度ニックネームを入力してくれる？'))
-            self._container['messages'] = msgs
-    
-            self._container['mode']['curr'] = ServiceMode.NICKNAME
+            self.container['msgs'] = msgs
+
+            self.container['mode']['curr'] = ServiceMode.NICKNAME
+
 
 class LinebotException(Exception):
     pass
