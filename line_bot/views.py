@@ -83,9 +83,11 @@ def callback(request):
 
     for event in events:
         if 'container' in request.session:
+            logger.debug('container is in session.')
             container = request.session['container']
             container['msgs'] = []
         else:
+            logger.debug('container isn''t in session.')
             container = {
                 'mode'      : {
                     'prev'  : ServiceMode.UNDEFINED,
