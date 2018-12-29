@@ -82,11 +82,11 @@ def callback(request):
     logger.debug('Parsing events successfully.')
 
     for event in events:
-        if 'status_container' in request.session:
-            status_container = request.session['status_container']
-            status_container['messages'] = []
+        if 'container' in request.session:
+            container = request.session['container']
+            container['msgs'] = []
         else:
-            status_container = {
+            container = {
                 'mode'      : {
                     'prev'  : ServiceMode.UNDEFINED,
                     'curr'  : ServiceMode.UNDEFINED,
@@ -100,28 +100,30 @@ def callback(request):
         logger.debug('Parsing events successfully.')
 
         event_type = event.type
-        if event_type == 'message':
-            service = MessageService(event, status_container)
-        elif event_type == 'postback':
-            service = PostbackService(event, status_container)
-        elif event_type == 'follow':
-            service = FollowService(event, status_container)
-        elif event_type == 'unfollow':
-            service = UnfollowService(event, status_container)
-        elif event_type == 'join':
-            pass
-        elif event_type == 'leave':
-            pass
-        elif event_type == 'beacon':
-            pass
-        elif event_type == 'accountLink':
-            pass
+        if event_type == 'unfollow':
+            service = UnfollowService(event, container)
+            request.session.clear()
         else:
-            return HttpResponse('NG', status = 500)
-
-        new_status_container = service.execute()
-        request.session['status_container'] = new_status_container
-        line_bot_api.reply_message(event.reply_token, new_status_container['msgs'])
+            if event_type == 'message':
+                service = MessageService(event, container)
+            elif event_type == 'postback':
+                service = PostbackService(event, container)
+            elif event_type == 'follow':
+                service = FollowService(event, container)
+            elif event_type == 'join':
+                pass
+            elif event_type == 'leave':
+                pass
+            elif event_type == 'beacon':
+                pass
+            elif event_type == 'accountLink':
+                pass
+            else:
+                return HttpResponse('NG', status = 500)
+    
+            new_container = service.execute()
+            request.session['container'] = new_container
+            line_bot_api.reply_message(event.reply_token, new_container['msgs'])
 
     return HttpResponse('OK', status = 200)
 
