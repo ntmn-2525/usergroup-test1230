@@ -32,7 +32,6 @@ class Session(models.Model):
     user_id = models.OneToOneField(
         LineFriend,
         on_delete = models.deletion.CASCADE,
-        unique = True,
     )
 
     data = models.BinaryField(
