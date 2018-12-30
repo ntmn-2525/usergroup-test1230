@@ -29,10 +29,8 @@ class Session(models.Model):
         default = 1,
     )
 
-    user_id = models.ForeignKey(
+    user_id = models.OneToOneField(
         LineFriend,
-        db_column = 'user_id',
-        to_field = 'user_id',
         on_delete = models.deletion.CASCADE,
         unique = True,
     )
