@@ -23,6 +23,41 @@ class LineFriend(models.Model):
         max_length = 32,
     )
 
+class Session(models.Model):
+    id = models.AutoField(
+        primary_key = True,
+        default = 1,
+    )
+
+    user_id = models.ForeignKey(
+        LineFriend,
+        db_column = 'user_id',
+        to_field = 'user_id',
+        on_delete = models.deletion.CASCADE,
+        unique = True,
+        null = False,
+        blank = False,
+    )
+
+    data = models.BinaryField(
+        default = '{}'.encode('utf-8'),
+        null = False,
+        blank = False,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add = True,
+        editable = False,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now = True,
+    )
+
+    expiration = models.DateTimeField(
+        null = True,
+    )
+
 class Category(models.Model):
     code = models.DecimalField(
         primary_key = True,

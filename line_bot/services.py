@@ -114,12 +114,8 @@ class UnfollowService(LinebotService):
 class MessageService(LinebotService):
 
     def process(self):
-        logger.debug('MessageService::1')
-        
         curr_mode = self.container['mode']['curr']
 
-        logger.debug('MessageService::2 ' + str(curr_mode))
-        
         if curr_mode == ServiceMode.NICKNAME:
             sub_service = NicknameSubService(self.event, self.container)
 
@@ -128,12 +124,8 @@ class MessageService(LinebotService):
 class NicknameSubService(LinebotSubService):
 
     def process(self):
-        logger.debug('NicknameSubService::1')
-        
         bot_name = self.event.message.text
 
-        logger.debug('NicknameSubService::2')
-        
         msgs = []
         msgs.append(
             TemplateSendMessage(
@@ -149,8 +141,6 @@ class NicknameSubService(LinebotSubService):
         )
         self.set_messages(msgs)
 
-        logger.debug('NicknameSubService::3')
-        
         self.set_next_mode(ServiceMode.NICKNAME_CONFIRM)
 
 class PostbackService(LinebotService):

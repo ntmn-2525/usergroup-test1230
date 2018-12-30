@@ -45,6 +45,9 @@ from .services import (
     UnfollowService,
 )
 
+from .models import Session
+import json
+
 try:
     DJANGO_LOG_LEVEL = os.getenv('DJANGO_LOG_LEVEL')
     LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
@@ -55,7 +58,6 @@ except ImportError:
         LINE_CHANNEL_SECRET,
         LINE_ACCESS_TOKEN,
     )
-
 
 # Logging.
 logger = SimpleConsoleLogger(to_log_level(DJANGO_LOG_LEVEL))
@@ -82,12 +84,15 @@ def callback(request):
     logger.debug('Parsing events successfully.')
 
     for event in events:
-        if 'container' in request.session:
+        session = LineSession(event).get_session()
+
+
+        if 'container' in session:
             logger.debug('container is in session.')
-            container = request.session['container']
+            container = session['container']
             container['msgs'] = []
         else:
-            logger.debug('container isn''t in session.')
+            logger.debug('container is not in session.')
             container = {
                 'mode'      : {
                     'prev'  : ServiceMode.UNDEFINED,
@@ -104,7 +109,7 @@ def callback(request):
         event_type = event.type
         if event_type == 'unfollow':
             service = UnfollowService(event, container)
-            request.session.clear()
+            session.clear()
         else:
             if event_type == 'message':
                 service = MessageService(event, container)
@@ -124,10 +129,39 @@ def callback(request):
                 return HttpResponse('NG', status = 500)
     
             new_container = service.execute()
-            request.session['container'] = new_container
+            session['container'] = new_container
             line_bot_api.reply_message(event.reply_token, new_container['msgs'])
 
     return HttpResponse('OK', status = 200)
+
+class LineSession(object):
+
+    def __init__(self, event):
+        user_id = event.source.user_id
+        sessions = Session.objects.filter(user_id = user_id)
+
+        if sessions.exists():
+            session = sessions[0]
+        else:
+            session = Session(user_id = user_id)
+            session.save()
+
+        self.__session = session
+
+        decoded_data = session.data.decode('utf-8')
+        data_dict = json.dumps(decoded_data)
+        self.data = data_dict
+
+    def get_session(self):
+        return self.data
+
+    def save(self):
+        json_code = json.dumps(self.data)
+        encoded_data = json_code.encode('utf-8')
+
+        session = self.__session
+        session.data = encoded_data
+        session.save()
 
 #@webhook_handler.add(FollowEvent)
 #def handle_follow(event):
