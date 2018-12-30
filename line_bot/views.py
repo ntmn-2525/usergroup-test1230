@@ -81,7 +81,7 @@ def callback(request):
     except InvalidSignatureError as e:
         raise e
 
-    logger.debug('Parsing events successfully.')
+    logger.debug('callback::1')
 
     for event in events:
         session = Session(event).get_session()
@@ -103,20 +103,27 @@ def callback(request):
                 },
             }
 
-        logger.debug('Parsing events successfully.')
+        logger.debug('callback::2')
 
         event_type = event.type
         if event_type == 'unfollow':
+            logger.debug('callback::unfollow::start')
             service = UnfollowService(event, container)
             session.clear()
+            logger.debug('callback::unfollow::end')
         else:
             if event_type == 'message':
+                logger.debug('callback::message::start')
                 service = MessageService(event, container)
-                logger.debug('MessageService::')
+                logger.debug('callback::message::end')
             elif event_type == 'postback':
+                logger.debug('callback::postback::start')
                 service = PostbackService(event, container)
+                logger.debug('callback::postback::end')
             elif event_type == 'follow':
+                logger.debug('callback::follow::start')
                 service = FollowService(event, container)
+                logger.debug('callback::follow::end')
             elif event_type == 'join':
                 pass
             elif event_type == 'leave':

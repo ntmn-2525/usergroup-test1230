@@ -85,11 +85,15 @@ class FollowService(LinebotService):
         user_id = self.event.source.user_id
         line_friends = LineFriend.objects.filter(user_id = user_id)
 
+        logger.debug('FollowService::1')
+
         if line_friends.exists():
             line_friend = line_friends[0]
         else:
             line_friend = LineFriend(user_id = user_id)
             line_friend.save()
+
+        logger.debug('FollowService::2')
 
         msgs = []
         msgs.append(TextSendMessage(text = 'お友だち登録ありがとう！'))
@@ -98,7 +102,11 @@ class FollowService(LinebotService):
         msgs.append(TextSendMessage(text = 'ぼくにニックネームをつけてみて！'))
         self.set_messages(msgs)
 
+        logger.debug('FollowService::3')
+
         self.set_next_mode(ServiceMode.NICKNAME)
+
+        logger.debug('FollowService::4')
 
 class UnfollowService(LinebotService):
 
