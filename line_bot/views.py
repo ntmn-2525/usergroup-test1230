@@ -45,7 +45,7 @@ from .services import (
     UnfollowService,
 )
 
-from .models import Session
+from .models import LineSession
 import json
 
 try:
@@ -84,7 +84,7 @@ def callback(request):
     logger.debug('Parsing events successfully.')
 
     for event in events:
-        session = LineSession(event).get_session()
+        session = Session(event).get_session()
 
         if 'container' in session:
             logger.debug('container is in session.')
@@ -134,16 +134,16 @@ def callback(request):
 
     return HttpResponse('OK', status = 200)
 
-class LineSession(object):
+class Session(object):
 
     def __init__(self, event):
         user_id = event.source.user_id
-        sessions = Session.objects.filter(user_id = user_id)
+        sessions = LineSession.objects.filter(user_id = user_id)
 
         if sessions.exists():
             session = sessions[0]
         else:
-            session = Session(user_id = user_id)
+            session = LineSession(user_id = user_id)
             session.save()
 
         self.__session = session

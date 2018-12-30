@@ -23,7 +23,7 @@ class LineFriend(models.Model):
         max_length = 32,
     )
 
-class Session(models.Model):
+class LineSession(models.Model):
     id = models.AutoField(
         primary_key = True,
         default = 1,
