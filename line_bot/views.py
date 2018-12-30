@@ -149,7 +149,7 @@ class Session(object):
         user_id = event.source.user_id
         sessions = LineSession.objects.filter(user_id = user_id)
 
-        logger.debug('Session::2')
+        logger.debug('Session::2 ' + type(sessions))
 
         if sessions.exists():
             logger.debug('Session::3')
