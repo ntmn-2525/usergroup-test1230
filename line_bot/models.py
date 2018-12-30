@@ -29,12 +29,18 @@ class LineSession(models.Model):
         default = 1,
     )
 
-    user_id = models.ForeignKey(
-        LineFriend,
-        db_column='user_id',
-        to_field = 'user_id',
-        on_delete = models.deletion.CASCADE,
+    user_id = models.CharField(
+        primary_key = True,
+        blank = False,
+        max_length = 256,
     )
+
+#    user_id = models.ForeignKey(
+#        LineFriend,
+#        db_column='user_id',
+#        to_field = 'user_id',
+#        on_delete = models.deletion.CASCADE,
+#    )
 
     data = models.BinaryField(
         default = '{}'.encode('utf-8'),
