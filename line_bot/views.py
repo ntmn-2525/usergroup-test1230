@@ -134,7 +134,7 @@ def callback(request):
                 pass
             else:
                 return HttpResponse('NG', status = 500)
-    
+
             new_container = service.execute()
             session['container'] = new_container
             line_bot_api.reply_message(event.reply_token, new_container['msgs'])

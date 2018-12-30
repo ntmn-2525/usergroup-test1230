@@ -24,11 +24,6 @@ class LineFriend(models.Model):
     )
 
 class LineSession(models.Model):
-    id = models.AutoField(
-        primary_key = True,
-        default = 1,
-    )
-
     user_id = models.CharField(
         primary_key = True,
         blank = False,
