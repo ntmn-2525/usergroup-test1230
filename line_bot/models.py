@@ -34,9 +34,6 @@ class Session(models.Model):
         db_column = 'user_id',
         to_field = 'user_id',
         on_delete = models.deletion.CASCADE,
-        unique = True,
-        null = False,
-        blank = False,
     )
 
     data = models.BinaryField(
