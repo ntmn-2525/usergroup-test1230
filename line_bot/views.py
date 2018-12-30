@@ -86,7 +86,6 @@ def callback(request):
     for event in events:
         session = LineSession(event).get_session()
 
-
         if 'container' in session:
             logger.debug('container is in session.')
             container = session['container']
@@ -113,6 +112,7 @@ def callback(request):
         else:
             if event_type == 'message':
                 service = MessageService(event, container)
+                logger.debug('MessageService::')
             elif event_type == 'postback':
                 service = PostbackService(event, container)
             elif event_type == 'follow':
