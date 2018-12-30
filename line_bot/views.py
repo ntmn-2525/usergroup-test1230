@@ -144,22 +144,36 @@ def callback(request):
 class Session(object):
 
     def __init__(self, event):
+        logger.debug('Session::1')
+
         user_id = event.source.user_id
         sessions = LineSession.objects.filter(user_id = user_id)
 
+        logger.debug('Session::2')
+
         if sessions.exists():
+            logger.debug('Session::3')
             session = sessions[0]
         else:
+            logger.debug('Session::4')
             session = LineSession(user_id = user_id)
             session.save()
 
+        logger.debug('Session::5')
+
         self.__session = session
+
+        logger.debug('Session::6')
 
         decoded_data = session.data.decode('utf-8')
         data_dict = json.dumps(decoded_data)
         self.data = data_dict
 
+        logger.debug('Session::7')
+
     def get_session(self):
+        logger.debug('Session::8')
+
         return self.data
 
     def save(self):
